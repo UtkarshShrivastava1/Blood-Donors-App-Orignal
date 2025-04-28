@@ -1,16 +1,11 @@
-// src/models/Donor.js
-
 import mongoose from "mongoose";
 
 const DonorSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
+  name: { type: String, required: true },
   bloodGroup: {
     type: String,
     required: true,
-    enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], // Optional but useful
+    enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
   },
   gender: {
     type: String,
@@ -26,7 +21,7 @@ const DonorSchema = new mongoose.Schema({
     required: true,
   },
   email: String,
-
+  address: { type: String }, // <-- Added the address field here
   country: {
     type: String,
     default: "India",
@@ -35,7 +30,6 @@ const DonorSchema = new mongoose.Schema({
   district: String,
   city: String,
   pincode: String,
-
   available: {
     type: Boolean,
     default: true,
@@ -47,13 +41,13 @@ const DonorSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-
-  // Optional future-proof fields
   notes: String,
   verified: {
     type: Boolean,
     default: false,
   },
 });
+
+console.log("Donor model loaded"); // optional debug line
 
 export default mongoose.models.Donor || mongoose.model("Donor", DonorSchema);

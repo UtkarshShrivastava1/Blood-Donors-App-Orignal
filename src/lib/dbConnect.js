@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 
-// Choose URI based on environment
 const MONGODB_URI =
   process.env.NODE_ENV === "development"
     ? process.env.MONGO_LOCAL_URI
@@ -8,11 +7,10 @@ const MONGODB_URI =
 
 if (!MONGODB_URI) {
   throw new Error(
-    "Please define the MONGO_LOCAL_URI and/or MONGO_ATLAS_URI in the appropriate .env file"
+    "Please define MONGO_LOCAL_URI and/or MONGO_ATLAS_URI in the appropriate .env file"
   );
 }
 
-// Global caching to prevent multiple DB connections during hot reload in dev
 let cached = global.mongoose;
 
 if (!cached) {
@@ -25,11 +23,25 @@ async function dbConnect() {
   if (!cached.promise) {
     cached.promise = mongoose.connect(MONGODB_URI, {
       bufferCommands: false,
+      dbName: "donorDB", // Optional: if you want to enforce db name
     });
   }
 
-  cached.conn = await cached.promise;
-  return cached.conn;
+  try {
+    cached.conn = await cached.promise;
+
+    if (process.env.NODE_ENV === "development") {
+      console.log("✅ MongoDB connection established (dev)");
+    } else {
+      console.log("✅ MongoDB connection established (prod)");
+    }
+
+    return cached.conn;
+  } catch (error) {
+    console.error("❌ MongoDB connection error:", error);
+    cached.promise = null;
+    throw error;
+  }
 }
 
 export default dbConnect;
