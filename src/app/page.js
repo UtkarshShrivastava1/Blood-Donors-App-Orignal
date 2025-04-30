@@ -1,154 +1,82 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { FiHeart } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiHeart, FiChevronUp, FiChevronDown } from "react-icons/fi";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import SearchDonorForm from "@/components/SearchDonorForm";
+import DonorTable from "@/components/DonorTable";
 
 export default function Home() {
   const [donors, setDonors] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFormExpanded, setIsFormExpanded] = useState(true);
+  const resultsRef = useRef(null);
+
+  const handleSearchComplete = (results) => {
+    setDonors(results);
+    setIsFormExpanded(false);
+    // Smooth scroll to results
+    if (results.length > 0) {
+      resultsRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-red-50">
       <ToastContainer position="top-right" />
 
-      {/* Hero Section
+      {/* Hero Section - Make it responsive */}
+      {/* ...existing hero section code... */}
+
+      {/* Search Form Section */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-center text-center gap-6 px-6 py-12 sm:px-16"
+        className="relative px-4 sm:px-6 pb-6"
+        animate={{ height: isFormExpanded ? "auto" : "min-content" }}
       >
-        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-          <Image
-            src="/blood-drop.png"
-            alt="Blood Drop Logo"
-            width={100}
-            height={100}
-            className="drop-shadow-lg hover:drop-shadow-2xl transition-all"
-          />
-        </motion.div>
-        <h1 className="text-4xl sm:text-6xl font-extrabold bg-gradient-to-r from-red-600 to-red-800 text-transparent bg-clip-text">
-          MySaviour
-        </h1>
-        <p className="text-lg sm:text-xl text-gray-600 max-w-2xl leading-relaxed">
-          Connect with lifesaving blood donors in your area. Every drop counts.
-        </p>
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Link
-            href="/register"
-            className="bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-4 rounded-full shadow-lg transition-all flex items-center gap-2 group"
-          >
-            <FiHeart className="group-hover:scale-110 transition-transform" />
-            <span>Become a Donor</span>
-          </Link>
-        </motion.div>
-      </motion.div> */}
-
-      {/* Search Form */}
-      <div className="flex justify-center px-6 pb-12">
-        <SearchDonorForm
-          onSearchComplete={setDonors}
-          setIsLoading={setIsLoading}
-          isLoading={isLoading}
-        />
-      </div>
-
-      {/* Optional: Render donors here */}
-      <div className="max-w-4xl mx-auto px-6 pb-12">
+        {/* Toggle Button - Only shows when results exist */}
         {donors.length > 0 && (
-          <div className="overflow-x-auto mt-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">
-              Donors Found: {donors.length}
-            </h3>
-            {/* Donor table */}
-            <table className="min-w-full table-auto bg-white rounded shadow-md">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                    Email
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                    Contact Number
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                    Blood Group
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                    Gender
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                    Age
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                    Availability
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                    Last Donated
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {donors.map((donor, i) => (
-                  <tr key={i} className="border-b hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {donor.name}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {/* Clickable Email */}
-                      <a
-                        href={`mailto:${donor.email}`}
-                        className="text-blue-500 hover:underline"
-                      >
-                        {donor.email || "N/A"}
-                      </a>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {/* Clickable Phone Number */}
-                      <a
-                        href={`tel:${donor.contactNumber}`}
-                        className="text-blue-500 hover:underline"
-                      >
-                        {donor.contactNumber}
-                      </a>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {donor.bloodGroup}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {donor.gender}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {donor.age}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      <span
-                        className={`px-3 py-1 text-xs rounded-full ${
-                          donor.available
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {donor.available ? "Available" : "Not Available"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {donor.lastDonated
-                        ? new Date(donor.lastDonated).toLocaleDateString()
-                        : "N/A"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <button
+            onClick={() => setIsFormExpanded(!isFormExpanded)}
+            className="absolute right-4 top-2 z-10 flex items-center gap-2 p-2 rounded-lg bg-rose-100 text-rose-600 hover:bg-rose-200 transition-colors"
+          >
+            <span className="text-sm font-medium mr-1">
+              {isFormExpanded ? "Minimize Search" : "Expand Search"}
+            </span>
+            {isFormExpanded ? <FiChevronUp /> : <FiChevronDown />}
+          </button>
         )}
+
+        {/* Form Container */}
+        <AnimatePresence>
+          {(isFormExpanded || donors.length === 0) && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="flex justify-center"
+            >
+              <SearchDonorForm
+                onSearchComplete={handleSearchComplete}
+                setIsLoading={setIsLoading}
+                isLoading={isLoading}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      {/* Donor Results Table */}
+      <div
+        ref={resultsRef}
+        className="max-w-4xl mx-auto px-4 sm:px-6 pb-12 transition-all duration-300"
+      >
+        <DonorTable
+          donors={donors}
+          className={donors.length > 0 ? "mt-4" : "mt-0"}
+        />
       </div>
     </div>
   );

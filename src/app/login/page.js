@@ -1,3 +1,4 @@
+///api/auth/send-otp
 "use client";
 
 import { useState } from "react";
@@ -50,10 +51,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-white  p-4">
       <div className="bg-white shadow-2xl rounded-xl p-8 w-full max-w-md">
-        <h2 className="text-3xl font-extrabold mb-8 text-center text-indigo-700">
-          Welcome Back
+        <h2 className="text-3xl font-extrabold mb-8 text-center text-rose-600">
+          Donor Login{" "}
         </h2>
 
         {error && (
@@ -63,7 +64,7 @@ export default function LoginPage() {
         )}
 
         <div className="mb-6">
-          <label className="block text-gray-800 mb-2 font-medium">
+          <label className="block text-gray-700 mb-2 font-medium">
             Email Address
           </label>
           <input
@@ -71,19 +72,19 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-gray-800"
+            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-rose-500 text-gray-800"
           />
         </div>
 
         {step === "enter-otp" && (
           <div className="mb-6">
-            <label className="block text-gray-800 mb-2 font-medium">OTP</label>
+            <label className="block text-gray-700 mb-2 font-medium">OTP</label>
             <input
               type="text"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
               placeholder="Enter the OTP sent to your email"
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-gray-800"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-rose-500 text-gray-800"
             />
           </div>
         )}
@@ -91,7 +92,7 @@ export default function LoginPage() {
         <button
           onClick={step === "enter-email" ? handleSendOtp : handleVerifyOtp}
           disabled={loading}
-          className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 active:bg-indigo-800 font-semibold transition duration-300"
+          className="w-full bg-rose-600 text-white py-3 rounded-lg hover:bg-rose-700 active:bg-rose-800 font-semibold transition duration-300"
         >
           {loading
             ? "Please wait..."

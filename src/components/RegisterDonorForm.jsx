@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { ClipLoader } from "react-spinners";
 import { FiSearch, FiMapPin, FiDroplet, FiMail } from "react-icons/fi";
+import { useRouter } from "next/navigation";
 
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -28,6 +29,8 @@ export default function DonorForm() {
   const [donorFormStatus, setDonorFormStatus] = useState("");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
   const clearForm = () => {
     setDonorName("");
     setDonorPhone("");
@@ -90,13 +93,44 @@ export default function DonorForm() {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!donorName.trim()) newErrors.name = "Name is required";
-    if (!donorPhone.trim() || donorPhone.length < 10)
-      newErrors.phone = "Valid contact number required";
-    if (!selectedBloodGroup) newErrors.bloodGroup = "Select blood group";
-    if (!selectedState) newErrors.state = "State is required";
-    if (!selectedDistrict) newErrors.district = "District is required";
-    if (!donorConsent) newErrors.consent = "You must agree before submitting";
+
+    // Name validation
+    if (!donorName.trim()) {
+      newErrors.name = "Name is required";
+    }
+
+    // Phone validation
+    const phoneRegex = /^\d{10}$/;
+    if (!donorPhone || !phoneRegex.test(donorPhone)) {
+      newErrors.phone = "Valid 10-digit contact number required";
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!donorEmail) {
+      newErrors.email = "Email is required";
+    } else if (!emailRegex.test(donorEmail)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    // Blood group validation
+    if (!selectedBloodGroup) {
+      newErrors.bloodGroup = "Blood group is required";
+    }
+
+    // Location validation
+    if (!selectedState) {
+      newErrors.state = "State is required";
+    }
+    if (!selectedDistrict) {
+      newErrors.district = "District is required";
+    }
+
+    // Consent validation
+    if (!donorConsent) {
+      newErrors.consent = "You must agree to the terms";
+    }
+
     return newErrors;
   };
 
@@ -104,38 +138,94 @@ export default function DonorForm() {
     e.preventDefault();
     setLoading(true);
 
-    const formErrors = validateForm();
-    if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors);
-      setLoading(false);
-      toast.error("Please fill in all required fields correctly");
-      return;
-    }
-
     try {
+      // Validate form first
+      const formErrors = validateForm();
+      if (Object.keys(formErrors).length > 0) {
+        setErrors(formErrors);
+        toast.error("Please fill in all required fields correctly");
+        setLoading(false);
+        return;
+      }
+
+      // Check for duplicate phone and email
+      try {
+        const checkDuplicate = await axios.post("/api/check-duplicate", {
+          email: donorEmail.toLowerCase().trim(),
+          phone: donorPhone,
+        });
+
+        if (checkDuplicate.data.exists) {
+          const { field, message } = checkDuplicate.data;
+          setErrors((prev) => ({
+            ...prev,
+            [field]: message,
+          }));
+          toast.error(message);
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error("Duplicate check failed:", error);
+        toast.error("Failed to verify registration details");
+        setLoading(false);
+        return;
+      }
+
+      // If no duplicates, proceed with registration
       const formData = {
-        name: donorName,
+        name: donorName.trim(),
         bloodGroup: selectedBloodGroup,
         gender: donorGender,
         age: donorAge,
         contactNumber: donorPhone,
-        email: donorEmail,
+        email: donorEmail.toLowerCase().trim(),
         state: selectedState,
         district: selectedDistrict,
         city: donorCity,
-        pincode: donorPincode,
+        address: donorAddress?.trim(),
+        pincode: donorPincode?.trim(),
         available: true,
-        lastDonated: donorLastDonated,
+        lastDonated: donorLastDonated || null,
         consent: donorConsent,
       };
 
-      await axios.post("/api/register", formData);
-      toast.success("Donor registration successful!");
-      clearForm();
-      setErrors({});
+      const response = await axios.post("/api/register", formData);
+
+      // Check the exact response structure
+      console.log("Registration response:", response.data);
+
+      // Update condition to check for successful registration
+      if (response.data && (response.data.success || response.status === 201)) {
+        // Show success toast
+        toast.success("Registration successful! Redirecting to login...", {
+          position: "bottom-right",
+          autoClose: 2000,
+          hideProgressBar: false,
+        });
+
+        // Clear form and errors
+        clearForm();
+        setErrors({});
+
+        // Redirect after toast shows
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      } else {
+        throw new Error(response.data?.message || "Registration failed");
+      }
     } catch (err) {
       console.error("Registration Error:", err);
-      toast.error(err.response?.data?.message || "Failed to register donor");
+      toast.error(err.response?.data?.message || "Failed to register donor", {
+        position: "bottom-right",
+        autoClose: 5000,
+      });
+
+      setErrors((prev) => ({
+        ...prev,
+        submit: err.response?.data?.message || "Registration failed",
+      }));
     } finally {
       setLoading(false);
     }
@@ -208,16 +298,22 @@ export default function DonorForm() {
                   htmlFor="donorEmail"
                   className="text-sm font-medium text-gray-700"
                 >
-                  Email (optional)
+                  Email *
                 </label>
                 <input
                   type="email"
                   id="donorEmail"
                   value={donorEmail}
                   onChange={(e) => setDonorEmail(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition"
+                  className={`w-full px-4 py-2.5 rounded-lg border text-sm placeholder-gray-400 
+      focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 
+      transition ${errors.email ? "border-red-500" : "border-gray-300"}`}
                   placeholder="Enter email address"
+                  required
                 />
+                {errors.email && (
+                  <p className="text-sm text-red-500">{errors.email}</p>
+                )}
               </div>
 
               {/* Age */}
