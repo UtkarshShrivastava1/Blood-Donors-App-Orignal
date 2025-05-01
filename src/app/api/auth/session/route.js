@@ -1,24 +1,30 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "../[...nextauth]/route";
+import jwt from "jsonwebtoken";
+import dbConnect from "@/lib/dbConnect";
+import Donor from "@/models/Donor";
 
-export async function GET() {
+const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_here";
+
+export async function GET(request) {
   try {
-    const session = await getServerSession(authOptions);
+    const token = request.cookies.get("token")?.value;
 
-    if (!session) {
+    if (!token) {
       return NextResponse.json({ user: null }, { status: 200 });
     }
 
-    return NextResponse.json(
-      {
-        user: {
-          email: session.user.email,
-          name: session.user.name,
-        },
-      },
-      { status: 200 }
+    const decoded = jwt.verify(token, JWT_SECRET);
+    await dbConnect();
+
+    const user = await Donor.findOne({ contactNumber: decoded.phone }).select(
+      "-password -otp -otpExpiry"
     );
+
+    if (!user) {
+      return NextResponse.json({ user: null }, { status: 200 });
+    }
+
+    return NextResponse.json({ user }, { status: 200 });
   } catch (error) {
     console.error("Session error:", error);
     return NextResponse.json({ user: null }, { status: 200 });
