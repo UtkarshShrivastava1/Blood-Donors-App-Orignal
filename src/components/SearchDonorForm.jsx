@@ -23,6 +23,17 @@ export default function SearchDonorForm({
   const [citiesLoading, setCitiesLoading] = useState(false);
   const [citiesError, setCitiesError] = useState(null);
 
+  const clearForm = () => {
+    setSelectedState("");
+    setSelectedDistrict("");
+    setSelectedCity("");
+    setDonorCity("");
+    setSelectedBloodGroup("");
+    setSelectedPincode("");
+    setCities([]);
+    onSearchComplete([]); // Clear results
+  };
+
   useEffect(() => {
     setDistricts(stateDistricts[selectedState] || []);
     setSelectedDistrict(""); // Reset district when state changes
@@ -265,18 +276,35 @@ export default function SearchDonorForm({
         </div>
       </div>
 
-      {/* Submit Button */}
-      <button
-        className="w-full bg-rose-500 hover:bg-rose-600 text-white py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-opacity-50"
-        onClick={handleSearch}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <ClipLoader size={20} color="white" />
-        ) : (
-          <span>Search Donors / रक्तदाता खोजें</span>
+      {/* Submit and Clear Buttons */}
+      <div className="flex gap-4">
+        <button
+          className="flex-1 bg-rose-500 hover:bg-rose-600 text-white py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-opacity-50"
+          onClick={handleSearch}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ClipLoader size={20} color="white" />
+          ) : (
+            <span>Search Donors / रक्तदाता खोजें</span>
+          )}
+        </button>
+
+        {/* Only show clear button if any field has value */}
+        {(selectedState ||
+          selectedDistrict ||
+          selectedCity ||
+          selectedBloodGroup ||
+          selectedPincode) && (
+          <button
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors"
+            onClick={clearForm}
+            type="button"
+          >
+            Clear Form
+          </button>
         )}
-      </button>
+      </div>
     </motion.div>
   );
 }

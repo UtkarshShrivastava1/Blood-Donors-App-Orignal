@@ -4,6 +4,9 @@ import { useMemo } from "react";
 export default function DonorTable({ donors, className = "" }) {
   if (!donors || donors.length === 0) return null;
 
+  // Debug log
+  console.log("Donor data:", donors[0]); // Check first donor's data structure
+
   // Sort donors by priority
   const sortedDonors = useMemo(() => sortDonorsByPriority(donors), [donors]);
 
@@ -29,22 +32,26 @@ export default function DonorTable({ donors, className = "" }) {
             <div className="space-y-2">
               <div className="flex justify-between py-1 border-b">
                 <span className="text-sm text-gray-600">Contact</span>
-                <a
-                  href={`tel:${donor.contactNumber}`}
-                  className="text-sm text-blue-500"
-                >
-                  {donor.contactNumber}
-                </a>
+                {donor.contactNumber && (
+                  <a
+                    href={`tel:${donor.contactNumber}`}
+                    className="text-sm text-blue-500 hover:underline"
+                  >
+                    {donor.contactNumber}
+                  </a>
+                )}
               </div>
 
               <div className="flex justify-between py-1 border-b">
                 <span className="text-sm text-gray-600">Email</span>
-                <a
-                  href={`mailto:${donor.email}`}
-                  className="text-sm text-blue-500"
-                >
-                  {donor.email || "N/A"}
-                </a>
+                {donor.email && (
+                  <a
+                    href={`mailto:${donor.email}`}
+                    className="text-sm text-blue-500 hover:underline"
+                  >
+                    {donor.email}
+                  </a>
+                )}
               </div>
 
               <div className="flex justify-between py-1 border-b">
@@ -128,12 +135,14 @@ export default function DonorTable({ donors, className = "" }) {
                   {donor.bloodGroup}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500">
-                  <a
-                    href={`tel:${donor.contactNumber}`}
-                    className="text-blue-500 hover:underline"
-                  >
-                    {donor.contactNumber}
-                  </a>
+                  {donor.contactNumber && (
+                    <a
+                      href={`tel:${donor.contactNumber}`}
+                      className="text-blue-500 hover:underline"
+                    >
+                      {donor.contactNumber}
+                    </a>
+                  )}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500">
                   {donor.gender || "N/A"}
@@ -158,12 +167,14 @@ export default function DonorTable({ donors, className = "" }) {
                     : "N/A"}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500">
-                  <a
-                    href={`mailto:${donor.email}`}
-                    className="text-blue-500 hover:underline"
-                  >
-                    {donor.email || "N/A"}
-                  </a>
+                  {donor.email && (
+                    <a
+                      href={`mailto:${donor.email}`}
+                      className="text-blue-500 hover:underline"
+                    >
+                      {donor.email}
+                    </a>
+                  )}
                 </td>
               </tr>
             ))}

@@ -17,9 +17,9 @@ export default function Home() {
 
   const handleSearchComplete = (results) => {
     setDonors(results);
-    setIsFormExpanded(false);
-    // Smooth scroll to results
+    // Automatically minimize form when results are found
     if (results.length > 0) {
+      setIsFormExpanded(false);
       resultsRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   };
@@ -36,14 +36,14 @@ export default function Home() {
         className="relative px-4 sm:px-6 pb-6"
         animate={{ height: isFormExpanded ? "auto" : "min-content" }}
       >
-        {/* Toggle Button - Only shows when results exist */}
+        {/* Toggle Button - Show when results exist */}
         {donors.length > 0 && (
           <button
             onClick={() => setIsFormExpanded(!isFormExpanded)}
             className="absolute right-4 top-2 z-10 flex items-center gap-2 p-2 rounded-lg bg-rose-100 text-rose-600 hover:bg-rose-200 transition-colors"
           >
             <span className="text-sm font-medium mr-1">
-              {isFormExpanded ? "Minimize Search" : "Expand Search"}
+              {isFormExpanded ? "Minimize Search" : "Modify Search"}
             </span>
             {isFormExpanded ? <FiChevronUp /> : <FiChevronDown />}
           </button>
@@ -56,6 +56,7 @@ export default function Home() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
               className="flex justify-center"
             >
               <SearchDonorForm
