@@ -7,7 +7,7 @@ const MONGODB_URI =
 
 if (!MONGODB_URI) {
   throw new Error(
-    "Please define MONGO_LOCAL_URI and/or MONGO_ATLAS_URI in the appropriate .env file"
+    "Please define MONGO_LOCAL_URI and/or MONGO_ATLAS_URI in your .env file"
   );
 }
 
@@ -23,19 +23,16 @@ async function dbConnect() {
   if (!cached.promise) {
     cached.promise = mongoose.connect(MONGODB_URI, {
       bufferCommands: false,
-      dbName: "donorDB", // Optional: if you want to enforce db name
     });
   }
 
   try {
     cached.conn = await cached.promise;
-
-    if (process.env.NODE_ENV === "development") {
-      console.log("✅ MongoDB connection established (dev)");
-    } else {
-      console.log("✅ MongoDB connection established (prod)");
-    }
-
+    console.log(
+      `✅ MongoDB connected (${
+        process.env.NODE_ENV === "development" ? "dev" : "prod"
+      })`
+    );
     return cached.conn;
   } catch (error) {
     console.error("❌ MongoDB connection error:", error);
