@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import Donor from "@/models/Donor"; // Adjust your model path
+import Donor from "@/models/Donor";
 import dbConnect from "@/lib/dbConnect";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_here";
 
-// Helper function to get phone number from JWT token
+// Helper: Extract phone from JWT stored in cookies
 async function getPhoneFromToken(request) {
   const token = request.cookies.get("token")?.value;
   if (!token) {
@@ -15,36 +15,39 @@ async function getPhoneFromToken(request) {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    return decoded.phone; // Return the phone number from the decoded token
+    return decoded.phone;
   } catch (error) {
     console.error("JWT Verification Error:", error);
     return null;
   }
 }
 
-// GET profile data
+// GET: Fetch user profile
 export async function GET(request) {
-  await dbConnect();
+  try {
+    await dbConnect();
+    const phone = await getPhoneFromToken(request);
 
-  const phone = await getPhoneFromToken(request);
+    if (!phone) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
 
-  if (!phone) {
+    const user = await Donor.findOne({ contactNumber: phone });
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ user });
+  } catch (error) {
+    console.error("Profile error:", error);
     return NextResponse.json(
-      { error: "Unauthorized: No valid token" },
-      { status: 401 }
+      { message: "Internal server error" },
+      { status: 500 }
     );
   }
-
-  const user = await Donor.findOne({ contactNumber: phone });
-
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
-
-  return NextResponse.json(user);
 }
 
-// PUT to update availability or profile
+// PUT: Update user profile or availability
 export async function PUT(request) {
   try {
     await dbConnect();
@@ -59,10 +62,9 @@ export async function PUT(request) {
 
     const updateData = await request.json();
 
-    // Include fullAddress in the update
     const updateObject = {
       ...updateData,
-      fullAddress: updateData.fullAddress || "", // Ensure fullAddress is included
+      fullAddress: updateData.fullAddress || "",
     };
 
     const user = await Donor.findOneAndUpdate(

@@ -15,15 +15,51 @@ export default function Navbar() {
 
   // Check login status on mount and when path changes
   useEffect(() => {
-    checkLoginStatus();
+    let mounted = true;
+
+    const checkAuth = async () => {
+      try {
+        const user = await checkLoginStatus();
+        if (mounted) {
+          setIsLoggedIn(!!user);
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        if (mounted) {
+          setIsLoggedIn(false);
+        }
+      }
+    };
+
+    checkAuth();
+
+    return () => {
+      mounted = false;
+    };
   }, [pathname]);
 
   const checkLoginStatus = async () => {
     try {
-      const res = await axios.get("/api/user", { withCredentials: true });
-      setIsLoggedIn(!!res.data);
+      const res = await axios.get("/api/user", {
+        // Changed from /api/auth/session
+        withCredentials: true,
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (res.data && res.data.user) {
+        return res.data.user;
+      }
+      return null;
     } catch (error) {
-      setIsLoggedIn(false);
+      if (error.response?.status === 401) {
+        // Expected error when not logged in
+        return null;
+      }
+      console.error("Auth check error:", error);
+      return null;
     }
   };
 

@@ -69,29 +69,31 @@ export default function SearchDonorForm({
   };
 
   const handleSearch = async () => {
-    if (
-      !selectedState ||
-      (!selectedDistrict && !selectedCity) ||
-      !selectedBloodGroup
-    ) {
-      toast.error("Please select all search criteria.");
+    if (!selectedState || !selectedBloodGroup) {
+      toast.error("Please select required search criteria");
       return;
     }
 
     if (typeof setIsLoading === "function") setIsLoading(true);
 
     try {
-      const res = await axios.get("/api/donors/search", {
+      const res = await axios.get("/api/donors", {
         params: {
           state: selectedState,
-          district: selectedDistrict,
-          city: donorCity, // Use the donorCity state here
+          district: selectedDistrict || undefined,
+          city: selectedCity || undefined,
           bloodGroup: selectedBloodGroup,
         },
       });
-      onSearchComplete(res.data || []);
+
+      if (res.data.success && res.data.donors?.length > 0) {
+        onSearchComplete(res.data.donors);
+      } else {
+        toast.info("No donors found matching your criteria");
+        onSearchComplete([]);
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Search error:", err);
       toast.error("Failed to fetch donors. Please try again.");
       onSearchComplete([]);
     } finally {

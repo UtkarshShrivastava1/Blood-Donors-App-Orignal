@@ -4,30 +4,37 @@ import Donor from "@/models/Donor";
 
 // GET: Search donors based on filters
 export async function GET(req) {
-  await dbConnect();
-
-  const { searchParams } = new URL(req.url);
-  const state = searchParams.get("state");
-  const district = searchParams.get("district");
-  const city = searchParams.get("city");
-  const bloodGroup = searchParams.get("bloodGroup");
-
   try {
-    // Build dynamic query object
-    const query = { available: true };
+    await dbConnect();
 
-    if (state) query.state = state;
+    const { searchParams } = new URL(req.url);
+    const state = searchParams.get("state");
+    const district = searchParams.get("district");
+    const city = searchParams.get("city");
+    const bloodGroup = searchParams.get("bloodGroup");
+
+    const query = {
+      available: true,
+      state: state,
+    };
+
     if (district) query.district = district;
     if (city) query.city = city;
     if (bloodGroup) query.bloodGroup = bloodGroup;
 
-    const donors = await Donor.find(query).sort({ registeredAt: -1 });
+    const donors = await Donor.find(query)
+      .select("-email -contactNumber -password -otp -otpExpiry")
+      .sort({ registeredAt: -1 });
 
-    return NextResponse.json({ success: true, donors });
+    return NextResponse.json({
+      success: true,
+      donors,
+      count: donors.length,
+    });
   } catch (err) {
-    console.error("Error searching donors:", err);
+    console.error("Search error:", err);
     return NextResponse.json(
-      { success: false, error: err.message },
+      { success: false, message: "Failed to fetch donors" },
       { status: 500 }
     );
   }

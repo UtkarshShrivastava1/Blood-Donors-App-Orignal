@@ -27,12 +27,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        {/* Charset and viewport */}
+        {/* Ensure proper character encoding */}
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-        {/* ✅ Favicon */}
-        <link rel="icon" type="image/png" href="/favicon.png" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 text-gray-900`}
@@ -40,7 +37,7 @@ export default function RootLayout({ children }) {
         <Navbar />
         <main className="min-h-screen">{children}</main>
         <Footer />
-        <CustomToast />
+        <CustomToast /> {/* ✅ Use the Client Component */}
         <ToastContainer
           position="bottom-right"
           autoClose={3000}
