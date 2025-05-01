@@ -29,7 +29,7 @@ async function dbConnect() {
   try {
     cached.conn = await cached.promise;
     console.log(
-      `✅ MongoDB connected (${
+      `✅ MongoDB connected to database: "${mongoose.connection.name}" (${
         process.env.NODE_ENV === "development" ? "dev" : "prod"
       })`
     );
