@@ -16,80 +16,56 @@ export default function DonorTable({ donors, className = "" }) {
         Donors Found: {donors.length}
       </h3>
 
-      {/* Mobile View - Card Layout */}
-      <div className="md:hidden space-y-4">
+      {/* Mobile View - Compact Card Layout */}
+      <div className="md:hidden grid grid-cols-1 gap-3">
         {sortedDonors.map((donor, i) => (
-          <div key={i} className="bg-white p-4 rounded-lg shadow-md">
-            <div className="flex justify-between items-start mb-3">
-              <h4 className="text-lg font-medium text-gray-900">
-                {donor.name}
-              </h4>
-              <span className="text-lg font-bold text-rose-600">
-                {donor.bloodGroup}
+          <div
+            key={i}
+            className="bg-white p-3 rounded-lg shadow-sm border border-gray-100"
+          >
+            {/* Primary Info Row */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-bold text-rose-600 w-10 text-center border-r border-gray-200 pr-2">
+                  {donor.bloodGroup}
+                </span>
+                <div className="flex flex-col">
+                  <h4 className="text-base font-medium text-gray-900 truncate">
+                    {donor.name}
+                  </h4>
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <span>{donor.gender || "N/A"}</span>
+                    <span>•</span>
+                    <span>{donor.age || "N/A"} yrs</span>
+                  </div>
+                </div>
+              </div>
+              <span
+                className={`px-2 py-0.5 text-xs rounded-full ${
+                  donor.available
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
+                {donor.available ? "Available" : "Unavailable"}
               </span>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between py-1 border-b">
-                <span className="text-sm text-gray-600">Contact</span>
-                {donor.contactNumber && (
-                  <a
-                    href={`tel:${donor.contactNumber}`}
-                    className="text-sm text-blue-500 hover:underline"
-                  >
-                    {donor.contactNumber}
-                  </a>
-                )}
-              </div>
-
-              <div className="flex justify-between py-1 border-b">
-                <span className="text-sm text-gray-600">Email</span>
-                {donor.email && (
-                  <a
-                    href={`mailto:${donor.email}`}
-                    className="text-sm text-blue-500 hover:underline"
-                  >
-                    {donor.email}
-                  </a>
-                )}
-              </div>
-
-              <div className="flex justify-between py-1 border-b">
-                <span className="text-sm text-gray-600">Gender</span>
-                <span className="text-sm text-gray-900">
-                  {donor.gender || "N/A"}
+            {/* Contact Button */}
+            {donor.contactNumber && (
+              <button
+                onClick={() =>
+                  (window.location.href = `tel:${donor.contactNumber}`)
+                }
+                className="w-full mt-2 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition-colors"
+              >
+                <span className="text-sm">📞</span>
+                <span className="font-medium">Call Donor</span>
+                <span className="text-sm opacity-75">
+                  ({donor.contactNumber})
                 </span>
-              </div>
-
-              <div className="flex justify-between py-1 border-b">
-                <span className="text-sm text-gray-600">Age</span>
-                <span className="text-sm text-gray-900">
-                  {donor.age || "N/A"}
-                </span>
-              </div>
-
-              <div className="flex justify-between py-1 border-b">
-                <span className="text-sm text-gray-600">Last Donated</span>
-                <span className="text-sm text-gray-900">
-                  {donor.lastDonated
-                    ? new Date(donor.lastDonated).toLocaleDateString()
-                    : "N/A"}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center pt-2">
-                <span className="text-sm text-gray-600">Status</span>
-                <span
-                  className={`px-3 py-1 text-xs rounded-full ${
-                    donor.available
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {donor.available ? "Available" : "Not Available"}
-                </span>
-              </div>
-            </div>
+              </button>
+            )}
           </div>
         ))}
       </div>
